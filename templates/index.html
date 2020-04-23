@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glossary Store</title>
+    <!-- 부트스트랩 세팅 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- 데이터테이블스 세팅 -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+
+</head>
+
+<body>
+    <div class="jumbotron">
+        <h1 class="display-4">글로서리 스토어</h1>
+        <p class="lead">아직도 엑셀로 단어정리하세요? 이제 웹에서 정리하세요!</p>
+        <hr class="my-4">
+        <p>새 단어를 저장하려면 아래 단어추가 버튼을 눌러주세요. 단어를 삭제하려면 행 선택 후 단어삭제 버튼을 눌러주세요.</p>
+        <a class="btn btn-primary btn-lg" onclick="openclose()" id="addBox" href="#" role="button">단어추가 박스 열기</a>
+        <a class="btn btn-primary btn-lg" id="deleteRow" href="#" role="button">단어삭제</a>
+    </div>
+
+    <form class="form-post" id="posting-box">
+        <div class="form-group">
+            <label for="formGroupExampleInput">Japanese Term</label>
+            <input type="text" class="form-control" id="japaneseInput" placeholder="ex) りんご">
+        </div>
+        <div class="form-group">
+            <label for="formGroupExampleInput2">Korean Term</label>
+            <input type="text" class="form-control" id="koreanInput" placeholder="ex) 사과">
+        </div>
+        <div class="form-group">
+            <label for="formGroupExampleInput2">Comments</label>
+            <input type="text" class="form-control" id="commentsInput" placeholder="ex) 과일">
+        </div>
+        <a class="btn btn-primary btn-lg" onclick="posting()" id="addRow" href="#" role="button">저장</a>
+    </form>
+
+    <div>
+        <table id="termTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Japanese Term</th>
+                    <th>Korean Term</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody id='termBox'>
+                <!-- <tr>
+                    <td>リンゴ</td>
+                    <td>사과는 맛있어 맛있으면 바나나</td>
+                    <td>과일</td>
+                </tr>
+                <tr>
+                    <td>いちご</td>
+                    <td>딸기</td>
+                    <td>과일</td>
+                </tr>
+                <tr>
+                    <td>スイカ</td>
+                    <td>수박</td>
+                    <td>과일</td>
+                </tr> -->
+            </tbody>
+            <!-- <tfoot>
+                <tr>
+                    <th>Japanese Term</th>
+                    <th>Korean Term</th>
+                    <th>Comments</th>
+                </tr>
+            </tfoot> -->
+        </table>
+    </div>
+</body>
+
+<script>
+    // 단어추가창 열고 닫기 기능
+    function openclose() {
+        if ($('#posting-box').css('display') == 'block') {
+            $('#posting-box').hide();
+            $('#addBox').text('단어추가 박스 열기')
+        } else {
+            $('#posting-box').show();
+            $('#addBox').text('단어추가 박스 닫기')
+        }
+    }
+
+    // 단어 추가 post 요청하기
+    function posting() {
+        var inputJapanese = $('#japaneseInput').val();
+        var inputKorean = $('#koreanInput').val();
+        var inputComments = $('#commentsInput').val();
+
+        $.ajax({
+            type: "POST",
+            url: "/glossary",
+            data: {
+                japanese_give: inputJapanese,
+                korean_give: inputKorean,
+                comments_give: inputComments
+            },
+            success: function (response) { // 성공하면
+                if (response['result'] == 'success') {
+                    alert('단어가 저장되었습니다!');
+                    window.location.reload();
+                }
+            }
+        })
+    }
+
+    // 단어 삭제 post 요청하기  
+
+
+    // 기본 세팅
+    $(document).ready(function () {
+        var table = $('#termTable').DataTable(
+            {
+                "paging": false, //paging = 페이징을 할 것인가
+                "ordering": true, //컬럼 클릭시 정렬하기를 할 것인가
+                "info": true, //페이지 상태에 대한 정보를 표시할 것인가
+                "filter": true, // 검색창을 보여줄 것인가
+                "lengthChange": true, //블록 단위 변경 기능을 사용할 것인가
+                "order": [[1, "desc"]], //기본 컬럼 정렬 설정
+                "stateSave": false, //새로고침 시에도 페이징의 현재 상태가 저장되어 유지됨
+                "pagingType": "numbers", // 페이징 타입
+                "scrollX": false, //x축 스크롤을 활성화할 것인가
+                "scrollY": "400px", //y축의 스크롤 크기
+                "scrollCollapse": true //y축 스크롤을 활성화할 것인가
+            });
+        // $('#termBox').html('');
+
+        // 단어 get 요청하기 & 프론트 화면에 뿌려주기
+        $.ajax({
+            type: "GET",
+            url: "/glossary",
+            data: {},
+            success: function (response) {
+                var terms = response['terms'];
+                for (i = 0; i < terms.length; i++) {
+                    table.row.add([terms[i]['japanese_term'], terms[i]['korean_term'], terms[i]['comments_term']]).draw(false);
+                }
+            }
+        })
+
+
+        // 행 클릭하면 선택 깜빡이 기능
+        $('#termTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            }
+            else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+        // 선택한 행을 삭제할 수 있는 기능(새로고침하면 원상복구되는 상태임)
+        $('#deleteRow').click(function () {
+            table.row('.selected').remove().draw(false);
+        });
+    });
+
+</script>
+<!-- 부트스트랩 세팅 -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+
+</html>
