@@ -33,5 +33,7 @@ def glossary_get():
    # terms라는 키값으로 단어정보 내려주기
    return jsonify({'result':'success', 'terms': result})
 
+## 클라이언트로부터 요청받은 단어 삭제요청을 POST하여 mongoDB 데이터를 삭제하는 API가 필요
+
 if __name__ == '__main__':
    app.run('127.0.0.1',port=5000,debug=True)
