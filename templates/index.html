@@ -115,6 +115,27 @@
     }
 
     // 단어 삭제 post 요청하기(여기서 막힘)
+    function deleting() {
+        var selectedJapanese = $('tr.odd.selected > td:nth-child(1)').val();
+        var selectedKorean = $('tr.odd.selected > td.sorting_1').val();
+        var selectedComments = $('tr.odd.selected > td:nth-child(3)').val();
+        
+        $.ajax({
+            type: "POST",
+            url: "/glossary",
+            date: {
+                japanese_give: selectedJapanese,
+                korean_give: selectedKorean,
+                comments_give: selectedComments
+            },
+            success: function (response) {
+                if (response['result'] == 'success') {
+                    alert('단어가 삭제되었습니다!');
+                    window.location.reload();
+                }
+            }
+        })
+    }
 
 
     // 기본 세팅
